@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.PlateDao">
+
+    <select id="listPlate" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        plate.plate_id      plateId,
+        plate.plate_name    plateName,
+        plate.plate_intro   plateIntro,
+        plate.post_number   postNumber,
+        plate.follow_number followNumber,
+        plate.plate_img     imgUrl
+        FROM plate
+        WHERE plate.state = #{state}
+    </select>
+
+    <select id="myListPlate" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        plate.plate_id      plateId,
+        plate.plate_name    plateName,
+        plate.plate_intro   plateIntro,
+        plate.post_number   postNumber,
+        plate.follow_number followNumber,
+        plate.plate_img     imgUrl
+        FROM  plate
+        WHERE plate.plate_id IN
+        <foreach collection="plateIds" item="item" index="index" open="(" close=")" separator=",">
+         #{item}
+        </foreach>
+    </select>
+
+    <select id="existPlate" resultType="java.lang.Integer">
+        select IFNULL((select 1 from plate where plate.plate_name = #{plateName} and plate.plate_id != #{plateId} limit 1), 0)
+    </select>
+
+    <insert id="addPlate" useGeneratedKeys="true" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO plate
+        (follow_number, plate_intro, plate_name, post_number, plate_img, state)
+        VALUES (#{followNumber}, #{plateIntro}, #{plateName}, #{postNumber}, #{plateImg}, #{state})
+    </insert>
+
+    <update id="plateFollowAdd">
+        UPDATE plate
+        SET plate.follow_number = plate.follow_number + 1
+        WHERE plate.plate_id = #{plateId}
+    </update>
+
+    <update id="plateFollowReduce">
+        UPDATE plate
+        SET plate.follow_number = plate.follow_number - 1
+        WHERE plate.plate_id = #{plateId}
+    </update>
+
+    <select id="queryPlateById" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        plate.plate_id  plateId,
+        plate.plate_name    plateName,
+        plate.plate_intro   plateIntro,
+        plate.post_number   postNumber,
+        plate.follow_number followNumber,
+        plate.plate_img     imgUrl
+        FROM plate
+        WHERE plate.plate_id = #{plateId}
+
+    </select>
+
+    <update id="updatePlatePostNumber">
+        UPDATE plate
+        SET plate.post_number = plate.post_number + #{num}
+        WHERE plate.plate_id = #{plateId}
+    </update>
+
+    <update id="updatePlateInfo" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE plate
+        SET plate_name = #{plateName}, plate_intro = #{plateIntro}, plate_img = #{plateImg}
+        WHERE plate.plate_id = #{plateId}
+    </update>
+
+    <update id="updatePlateState" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE plate
+        SET plate.state = #{state}
+        WHERE plate.plate_id = #{plateId}
+    </update>
+
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.UserDao">
+
+    <select id="getUser" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+	        user.user_id userId,
+            user.points points,
+            user.register_time  registerTime,
+            user.status status,
+            user.user_email userEmail,
+            user.user_image imgUrl,
+            user.user_name  userName,
+            user.user_sex   userSex,
+            user.user_show  userShow,
+            user.user_password  userPassword,
+            user.user_intro userIntro,
+            user.change_count   changeCount
+        FROM
+	            user
+        WHERE
+	            user.user_email = #{userEmail}
+    </select>
+
+    <insert id="addUser" useGeneratedKeys="true" parameterType="com.alibaba.fastjson.JSONObject">
+               INSERT INTO user
+        (register_time, points, status, user_email, user_image, user_name, user_password, user_show, user_sex, user_intro, change_count)
+        VALUES (#{time}, #{points}, #{status}, #{userEmail}, #{userImage}, #{userName}, #{userPassword}, #{userShow}, #{userSex}, #{userIntro}, #{changeCount})
+    </insert>
+
+    <select id="queryUserById" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            user.user_id userId,
+            user.points points,
+            user.register_time  registerTime,
+            user.status status,
+            user.user_email userEmail,
+            user.user_image imgUrl,
+            user.user_name  userName,
+            user.user_sex   userSex,
+            user.user_show  userShow,
+            user.user_intro userIntro,
+            user.change_count   changeCount
+        FROM user
+        WHERE user.user_id = #{userId}
+    </select>
+
+    <select id="queryUserByEmail" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            user.user_id userId,
+            user.points points,
+            user.register_time  registerTime,
+            user.status status,
+            user.user_email userEmail,
+            user.user_image imgUrl,
+            user.user_name  userName,
+            user.user_sex   userSex,
+            user.user_show  userShow,
+            user.user_intro userIntro,
+            user.change_count   changeCount
+        FROM user
+        WHERE user.user_email = #{email}
+    </select>
+
+    <select id="queryUserByUserName" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            user.user_id userId,
+            user.points points,
+            user.register_time  registerTime,
+            user.status status,
+            user.user_email userEmail,
+            user.user_image imgUrl,
+            user.user_name  userName,
+            user.user_sex   userSex,
+            user.user_show  userShow,
+            user.user_intro userIntro,
+            user.change_count   changeCount
+        FROM user
+        WHERE user.user_name LIKE '%%${name}%%'
+    </select>
+
+    <select id="existEmail" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT *
+        FROM user
+        WHERE user.user_email = #{userEmail} limit 1
+    </select>
+
+    <select id="existUsername" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT *
+        FROM user
+        WHERE user.user_name = #{username} limit 1
+    </select>
+
+    <update id="updateUserName" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE user
+        SET user.user_name = #{userName}, user.change_count = user.change_count - 1
+        WHERE user.user_id = #{userId}
+    </update>
+
+    <update id="updateUserShow" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE user
+        SET user.user_show = #{userShow}
+        WHERE user.user_id = #{userId}
+    </update>
+
+    <update id="updateUserImg" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE user
+        SET user.user_image = #{imgUrl}
+        WHERE user.user_id = #{userId}
+    </update>
+
+    <update id="updateUserInfo" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE user
+        SET user_sex = #{userSex}, user_intro = #{userIntro}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="computeUserPoints">
+        UPDATE user
+        SET user.points = user.points + #{num}
+        WHERE user.user_id = #{userId}
+    </update>
+
+    <update id="updateUserStatus">
+        UPDATE user
+        SET user.status = #{status}
+        WHERE user.user_id = #{userId}
+    </update>
+
+</mapper>

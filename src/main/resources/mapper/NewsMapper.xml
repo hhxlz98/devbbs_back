@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.NewsDao">
+    <insert id="addNews" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO news
+        (news_intro, img_url, to_link, valid, update_time) VALUES
+        (#{newsIntro}, #{imgUrl}, #{toLink}, #{valid}, #{updateTime})
+    </insert>
+
+    <select id="selectHomeNewsList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            news_id newsId,
+            news_intro  newsIntro,
+            img_url imgUrl,
+            update_time updateTime,
+            valid   valid,
+            to_link toLink
+        FROM news
+        WHERE valid = 1
+        ORDER BY news.update_time DESC
+    </select>
+
+    <select id="selectNewsList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            news_id newsId,
+            news_intro  newsIntro,
+            img_url imgUrl,
+            update_time updateTime,
+            valid   valid,
+            to_link toLink
+        FROM news
+        ORDER BY news.update_time DESC
+    </select>
+
+    <update id="updateNews" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE news
+        SET news_intro = #{newsIntro},
+            img_url = #{imgUrl},
+            to_link = #{toLink},
+            update_time = #{updateTime}
+        WHERE
+            news_id = #{newsId}
+    </update>
+
+    <update id="updateNewsValid">
+        UPDATE news
+        SET valid = #{valid}
+        WHERE
+            news_id = #{newsId}
+    </update>
+
+    <delete id="deleteNews">
+        DELETE FROM news
+        WHERE news_id = #{newsId}
+    </delete>
+
+</mapper>

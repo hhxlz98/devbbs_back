@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.TaskDao">
+    <insert id="addTask" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO task
+        (circle_time, desc_words, end_time, reward, start_time, title) VALUES
+        (#{circleTime}, #{descWords}, #{endTime}, #{reward}, #{startTime}, #{title})
+    </insert>
+
+    <update id="updateTaskInfo" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE task
+        SET task.circle_time = #{circleTime}, task.desc_words = #{descWords},
+            task.start_time = #{startTime}, task.end_time = #{endTime},
+            task.title = #{title}, task.reward = #{reward}
+        WHERE task_id = #{taskId}
+    </update>
+
+    <delete id="taskId">
+        DELETE FROM task
+        WHERE task_id = #{taskId}
+    </delete>
+
+    <select id="listDoingTask" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            task_relate.add_time    addTime,
+            task_relate.task_relate_id  taskRelateId,
+            task.title  title,
+            task.desc_words descWords,
+            task.start_time startTime,
+            task.end_time   endTime,
+            task.reward     reward,
+            task.task_id    taskId
+        FROM task_relate LEFT JOIN task ON task_relate.task_id = task.task_id
+        WHERE task_relate.user_id = #{userId} and (task_relate.state = 0  or task_relate.state = 1)ORDER BY task_relate.add_time DESC
+    </select>
+
+    <select id="listTask" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            task.title  title,
+            task.desc_words descWords,
+            task.start_time startTime,
+            task.end_time   endTime,
+            task.reward     reward,
+            task.task_id    taskId,
+            task.circle_time    circleTime
+        FROM task
+        <if test="finishTasks.size() > 0">
+            WHERE task.task_id NOT IN
+            <foreach collection="finishTasks" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+
+    </select>
+
+    <select id="allFinishTask"  resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            task.title  title,
+            task.desc_words descWords,
+            task.start_time startTime,
+            task.end_time   endTime,
+            task.reward     reward,
+            task.task_id    taskId,
+            task.circle_time    circleTime,
+            task_relate.finish_time     finishTime,
+            task_relate.task_relate_id  taskRelateId
+        FROM task_relate LEFT JOIN task ON task_relate.task_id= task.task_id
+        WHERE task_relate.user_id = #{userId} and task_relate.state = 2
+    </select>
+
+    <select id="allTaskList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            task.title  title,
+            task.desc_words descWords,
+            task.start_time startTime,
+            task.end_time   endTime,
+            task.reward     reward,
+            task.task_id    taskId,
+            task.circle_time    circleTime
+        FROM task ORDER BY start_time
+    </select>
+
+
+</mapper>

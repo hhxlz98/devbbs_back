@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.PlateRelateDao">
+
+    <select id="relatePlate" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT *
+        FROM plate_relate
+        WHERE plate_relate.user_id = #{userId} and plate_relate.type = #{type}
+    </select>
+
+    <insert id="addPlateRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO plate_relate
+        (plate_id, type, user_id) VALUES
+        (#{plateId}, #{type}, #{userId})
+    </insert>
+
+    <select id="existPlateRelate" parameterType="com.alibaba.fastjson.JSONObject" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT *
+        FROM plate_relate
+        WHERE plate_relate.user_id = #{userId} and plate_relate.type = #{type} and plate_relate.plate_id = #{plateId}
+    </select>
+
+    <delete id="deletePlateRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        DELETE FROM plate_relate
+        WHERE plate_relate.user_id = #{userId} and plate_relate.type = #{type} and plate_relate.plate_id = #{plateId}
+    </delete>
+
+    <select id="listPlateRelateUser" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            u.user_id userId,
+            u.user_name userName,
+            u.user_image    imgUrl
+        FROM plate_relate AS pr LEFT JOIN user AS u ON pr.user_id = u.user_id
+        WHERE pr.plate_id = #{plateId} and pr.type = #{type}
+    </select>
+
+</mapper>

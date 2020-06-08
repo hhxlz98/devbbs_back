@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.MailDao">
+
+    <insert id="addMail" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO mail
+        (content, from_id, state, send_time, to_id, title, from_delete) VALUES
+        (#{content}, #{fromId}, #{state}, #{sendTime}, #{toId}, #{title}, #{fromDelete})
+    </insert>
+
+    <insert id="addSyeMails" parameterType="java.util.List">
+        INSERT INTO mail
+        (content, from_id, send_time, to_id, title, state, from_delete) VALUES
+        <foreach collection="mails" item="mail" separator="," close=";">
+            (#{mail.content}, #{mail.fromId}, #{mail.sendTime}, #{mail.toId}, #{mail.title}, #{mail.state}, #{mail.fromDelete})
+        </foreach>
+    </insert>
+
+    <update id="updateMailState" parameterType="com.alibaba.fastjson.JSONObject">
+        UPDATE mail
+        SET state = #{state}
+        WHERE mail_id = #{mailId}
+    </update>
+
+    <select id="selectFromMailListOnState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            fu.user_name	fromUserName,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS fu ON m.from_id = fu.user_id
+                LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.from_id = #{userId} and m.state = #{state} and m.from_id != 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectFromMailListLowState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            fu.user_name	fromUserName,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS fu ON m.from_id = fu.user_id
+                LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.from_id = #{userId} and m.state &lt; #{state} and m.from_id != 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectFromMailListUpState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            fu.user_name	fromUserName,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS fu ON m.from_id = fu.user_id
+                LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.from_id = #{userId} and m.state &gt; #{state} and m.from_id != 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectToMailListOnState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            fu.user_name	fromUserName,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS fu ON m.from_id = fu.user_id
+                LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.to_id = #{userId} and m.state = #{state} and m.from_id != 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectToMailListLowState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            fu.user_name	fromUserName,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS fu ON m.from_id = fu.user_id
+                LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.to_id = #{userId} and m.state &lt; #{state} and m.from_id != 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectToMailListUpState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            fu.user_name	fromUserName,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS fu ON m.from_id = fu.user_id
+                LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.to_id = #{userId} and m.state &gt; #{state} and m.from_id != 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="existMailById" resultType="java.lang.Integer">
+        SELECT
+            IFNULL( ( SELECT 1 FROM mail WHERE mail_id = #{mailId} LIMIT 1 ), 0 )
+    </select>
+
+    <select id="unreadMailCountForUser" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM mail
+        WHERE to_id = #{userId} AND state = 0 AND from_id != 0
+    </select>
+
+    <select id="unreadMailCountForSys" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM mail
+        WHERE to_id = #{userId} AND state = 0 AND from_id = 0
+    </select>
+
+    <select id="selectSystemMailListOnState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.to_id = #{userId} and m.state = #{state} and m.from_id = 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectSystemMailListLowState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.to_id = #{userId} and m.state &lt; #{state} and m.from_id = 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectSystemMailListUpState" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.to_id = #{userId} and m.state &gt; #{state} and m.from_id = 0 ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectMailForFrom" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            m.mail_id   mailId,
+            m.title	title,
+            m.from_id fromId,
+            m.to_id toId,
+            m.content content,
+            tu.user_name	toUserName,
+            m.send_time	sendTime,
+            m.state state
+        FROM
+            mail AS m LEFT JOIN user AS tu ON m.to_id = tu.user_id
+        WHERE
+            m.from_id = #{userId} and m.from_delete = #{fromDelete} ORDER BY m.send_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <update id="updateMailFromDelete">
+        UPDATE mail
+        SET mail.from_delete = #{fromDelete}
+        WHERE mail.mail_id = #{mailId}
+    </update>
+
+</mapper>

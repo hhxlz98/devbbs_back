@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.PostDao">
+
+    <insert id="addPost" parameterType="com.alibaba.fastjson.JSONObject" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO post
+        (author_id, title, content, publish_time, reply_time, plate_id, tab, visit_number, reply_number, top, good, like_number, reward, helpful_reward, helpful_number, last_time, status , edit_time)
+        VALUES (#{authorId}, #{title}, #{content}, #{publishTime}, #{replyTime}, #{plateId}, #{tab}, #{visitNumber}, #{replyNumber}, #{top}, #{good}, #{likeNumber}, #{reward}, #{helpfulReward}, #{helpfulNumber}, #{lastTime}, #{status}, #{publishTime})
+    </insert>
+
+    <select id="allPostList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT post.post_id    postId,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab
+        FROM post WHERE post.plate_id = #{plateId} and post.top = 0 ORDER BY post.reply_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="tabPostList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT post.post_id    postId,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab
+        FROM post
+        WHERE post.plate_id = #{plateId} and post.tab = #{tab} and post.top = 0 ORDER BY post.reply_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="topPostList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT post.post_id    postId,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab
+        FROM post
+        WHERE post.plate_id = #{plateId} and post.top = 1 ORDER BY post.reply_time DESC
+    </select>
+
+    <select id="goodPostList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT post.post_id    postId,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab
+        FROM post
+        WHERE post.plate_id = #{plateId} and post.good = 1 ORDER BY post.reply_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="countPost" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM post
+        WHERE post.plate_id = #{plateId}
+    </select>
+
+    <select id="countTabPost" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM post
+        WHERE post.plate_id = #{plateId} and post.tab = #{tab}
+    </select>
+
+    <select id="countGoodPost" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM post
+        WHERE post.plate_id = #{plateId} and post.good = 1
+    </select>
+
+    <select id="postContent" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.content   content,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+            post.last_time  lastTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.publish_time   publishTime,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab,
+			post.like_number    likeNumber,
+			post.reward reward,
+			post.helpful_number helpfulNumber,
+			post.helpful_reward helpfulReward,
+			post.status status,
+			post.plate_id plateId,
+			post.edit_time  editTime,
+			plate.plate_name    plateName
+        FROM post LEFT JOIN plate ON post.plate_id = plate.plate_id
+        WHERE post.post_id = #{postId}
+    </select>
+
+    <select id="postContentByPostId" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.title  title,
+            post.content    content,
+            user.user_name  userName,
+            user.user_id    userId,
+            user.status     userStatus
+        FROM post LEFT JOIN user ON post.author_id = user.user_id
+        WHERE post.post_id = #{postId}
+    </select>
+
+    <update id="updatePostStatus">
+        UPDATE post
+        SET post.status = #{status}
+        WHERE post.post_id = #{postId}
+    </update>
+
+    <update id="updatePostLike">
+        UPDATE post
+        SET post.like_number = post.like_number + #{num}
+        WHERE post.post_id = #{postId}
+    </update>
+
+    <update id="updatePostByComment">
+        UPDATE post
+        SET post.reply_number = post.reply_number + 1, post.reply_time = #{replyTime}
+        WHERE post.post_id = #{postId}
+    </update>
+
+    <update id="updatePostVisitNumber">
+        UPDATE post
+        SET visit_number = visit_number + 1
+        WHERE post_id = #{postId}
+    </update>
+
+    <update id="updatePostHelpfulNumber">
+        UPDATE post
+        SET helpful_number = helpful_number + #{num}
+        WHERE post_id = #{postId}
+    </update>
+
+    <select id="countPostForUser" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM post
+        WHERE author_id = #{userId}
+    </select>
+
+    <select id="countGoodForUser" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM post
+        WHERE author_id = #{userId} and good = 1
+    </select>
+
+    <select id="postLikeNumberForUser" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(like_number),0)
+        FROM post
+        WHERE author_id = #{userId}
+    </select>
+
+    <select id="userPostList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.publish_time   publishTime,
+            post.visit_number   visitNumber,
+            post.reply_number   replyNumber,
+            post.good   putGood,
+            post.top    putTop,
+            post.tab    tab,
+            post.title  title,
+            post.content    content,
+            plate.plate_name    plateName
+        FROM post JOIN plate on post.plate_id = plate.plate_id
+        WHERE post.author_id = #{userId} and post.state = #{state} ORDER BY post.publish_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <update id="updatePostState">
+        UPDATE post
+        SET post.state = #{state}
+        WHERE post.post_id = #{postId}
+    </update>
+
+    <update id="updatePostContent">
+        UPDATE post
+        SET post.content = #{content},
+            post.edit_time = #{editTime}
+        WHERE post.post_id = #{postId}
+    </update>
+
+    <select id="searchPostListSortByPublishOnTitle" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.content   content,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+            post.last_time  lastTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.publish_time   publishTime,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab,
+			post.like_number    likeNumber,
+			post.reward reward,
+			post.helpful_number helpfulNumber,
+			post.helpful_reward helpfulReward,
+			post.status status,
+			post.plate_id plateId,
+			plate.plate_name    plateName,
+			user.user_name  authorName
+        FROM post LEFT JOIN plate ON post.plate_id = plate.plate_id
+            LEFT JOIN user ON post.author_id = user.user_id
+        WHERE post.title LIKE  '%%${searchString}%%'
+        ORDER BY post.publish_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="searchPostListSortByReplyOnTitle" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.content   content,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+            post.last_time  lastTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.publish_time   publishTime,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab,
+			post.like_number    likeNumber,
+			post.reward reward,
+			post.helpful_number helpfulNumber,
+			post.helpful_reward helpfulReward,
+			post.status status,
+			post.plate_id plateId,
+			plate.plate_name    plateName,
+			user.user_name  authorName
+        FROM post LEFT JOIN plate ON post.plate_id = plate.plate_id
+                LEFT JOIN user ON post.author_id = user.user_id
+        WHERE post.title LIKE  '%%${searchString}%%'
+        ORDER BY post.reply_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="searchPostListSortByPublishOnContent" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.content   content,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+            post.last_time  lastTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.publish_time   publishTime,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab,
+			post.like_number    likeNumber,
+			post.reward reward,
+			post.helpful_number helpfulNumber,
+			post.helpful_reward helpfulReward,
+			post.status status,
+			post.plate_id plateId,
+			plate.plate_name    plateName,
+			user.user_name  authorName
+        FROM post LEFT JOIN plate ON post.plate_id = plate.plate_id
+                LEFT JOIN user ON post.author_id = user.user_id
+        WHERE post.content LIKE  '%%${searchString}%%'
+        ORDER BY post.publish_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="searchPostListSortByReplyOnContent" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.content   content,
+            post.author_id  authorId,
+            post.title      title,
+            post.reply_time	replyTime,
+            post.last_time  lastTime,
+			post.reply_number	replyNumber,
+			post.visit_number	visitNumber,
+			post.publish_time   publishTime,
+			post.top	putTop,
+			post.good	putGood,
+			post.tab	tab,
+			post.like_number    likeNumber,
+			post.reward reward,
+			post.helpful_number helpfulNumber,
+			post.helpful_reward helpfulReward,
+			post.status status,
+			post.plate_id plateId,
+			plate.plate_name    plateName,
+			user.user_name  authorName
+        FROM post LEFT JOIN plate ON post.plate_id = plate.plate_id
+                LEFT JOIN user ON post.author_id = user.user_id
+        WHERE post.content LIKE  '%%${searchString}%%'
+        ORDER BY post.reply_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="selectLatestPost" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.title  title,
+            post.top	putTop,
+			post.good	putGood,
+			post.tab	tab
+        FROM post
+        ORDER BY post.publish_time DESC
+        limit 5
+    </select>
+
+    <select id="selectHotPost" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            post.post_id    postId,
+            post.title  title,
+            post.top	putTop,
+			post.good	putGood,
+			post.tab	tab
+		FROM
+		    post
+		ORDER BY post.reply_number * 10 + post.visit_number
+        limit 5
+    </select>
+
+</mapper>

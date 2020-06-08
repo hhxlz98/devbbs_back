@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.TaskRelateDao">
+
+    <insert id="addTaskRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO task_relate
+        (add_time, finish_time, state, task_id, user_id) VALUES
+        (#{addTime}, #{finishTime}, #{state}, #{taskId}, #{userId})
+    </insert>
+
+    <update id="updateTaskRelate">
+        UPDATE task_relate
+        SET state = #{state}
+        WHERE task_relate_id = #{taskRelateId}
+    </update>
+
+    <update id="finishTask">
+        UPDATE task_relate
+        SET state = 2, task_relate.finish_time = #{finishTime}
+        WHERE task_relate_id = #{taskRelateId}
+    </update>
+
+    <delete id="deleteTaskRelate">
+        DELETE FROM task_relate
+        WHERE task_relate_id IN
+        <foreach collection="ids"  item="item" index="index" open="(" close=")" separator=",">
+        #{item}
+        </foreach>
+    </delete>
+
+    <select id="selectUserTask" resultType="java.lang.String">
+        SELECT task_relate.task_id
+        FROM task_relate
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="queryTaskReward" resultType="java.lang.Integer">
+        SELECT task.reward
+        FROM task_relate LEFT JOIN task ON task_relate.task_id = task.task_id
+        WHERE task_relate.task_relate_id = #{taskRelateId}
+    </select>
+
+
+
+</mapper>

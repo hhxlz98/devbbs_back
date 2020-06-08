@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.PunishRecordDao">
+
+    <insert id="addPunishRecord" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT punish_record
+        (user_id, type, start_time, last_time, plate_id, deal_user_id)
+        VALUES (#{userId}, #{type}, #{startTime}, #{lastTime}, #{plateId}, #{dealUserId})
+    </insert>
+
+    <delete id="deleteRecord">
+        DELETE FROM punish_record
+        WHERE punish_record_id = #{punishRecordId}
+    </delete>
+
+    <select id="queryRecordById" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            p.user_id   userId,
+            u.user_name userName,
+            p.punish_record_id  punishRecordId,
+            p.start_time    startTime,
+            p.last_time  lastTime,
+            p.type  type,
+            p.deal_user_id  dealUserId,
+            d.user_name dealUserName,
+            pl.plate_name   plateName
+        FROM punish_record AS p
+            LEFT JOIN user AS u ON p.user_id = u.user_id
+            LEFT JOIN user AS d ON p.deal_user_id = d.user_id
+            LEFT JOIN plate AS pl ON p.plate_id = pl.plate_id
+        WHERE p.user_id = #{userId}
+        ORDER BY p.start_time DESC
+    </select>
+
+    <select id="userPunishForPlate" resultType="java.lang.Long">
+
+        SELECT
+        IFNULL(
+            (SELECT punish_record.start_time + punish_record.last_time
+            From punish_record
+            WHERE punish_record.user_id = #{userId} AND punish_record.plate_id = #{plateId}
+            ORDER BY punish_record.start_time DESC
+            limit 1), 0
+        )
+    </select>
+
+</mapper>

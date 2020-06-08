@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.PostRelateDao">
+    
+    <insert id="addPostRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO post_relate
+        (post_id, type, user_id) VALUES
+        (#{postId}, #{type}, #{userId})
+    </insert>
+    
+    <delete id="deletePostRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        DELETE FROM post_relate
+        WHERE post_relate.user_id = #{userId} and post_relate.type = #{type} and post_relate.post_id = #{postId}
+    </delete>
+    
+    <select id="existPostRelate" parameterType="com.alibaba.fastjson.JSONObject" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT *
+        FROM post_relate
+        WHERE post_relate.user_id = #{userId} and post_relate.post_id = #{postId}
+    </select>
+
+</mapper>

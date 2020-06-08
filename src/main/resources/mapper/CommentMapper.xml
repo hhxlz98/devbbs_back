@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.CommentDao">
+
+    <select id="listComment" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        comment_id  commentId,
+        content     content,
+        post_id     postId,
+        author_id   authorId,
+        best    best,
+        helpful helpful,
+        like_number likeNumber,
+        floor_number    floorNumber,
+        publish_time    publishTime,
+        super_comment_id    upId
+        FROM comment
+        WHERE comment.post_id = #{postId} and comment.best = 0 and comment.helpful = 0 ORDER BY comment.publish_time
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="listHelpComment" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        comment_id  commentId,
+        content     content,
+        post_id     postId,
+        author_id   authorId,
+        best    best,
+        helpful helpful,
+        like_number likeNumber,
+        floor_number    floorNumber,
+        publish_time    publishTime,
+        super_comment_id    upId
+        FROM comment
+        WHERE comment.post_id = #{postId} and comment.helpful = 1 ORDER BY comment.publish_time
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="bestComment" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        comment_id  commentId,
+        content     content,
+        post_id     postId,
+        author_id   authorId,
+        best    best,
+        helpful helpful,
+        like_number likeNumber,
+        floor_number    floorNumber,
+        publish_time    publishTime,
+        super_comment_id    upId
+        FROM comment
+        WHERE comment.post_id = #{postId} and comment.best = 1
+    </select>
+
+    <select id="queryCommentById" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        comment_id commentId,
+        comment_id  commentId,
+        content     content,
+        post_id     postId,
+        author_id   authorId,
+        best    best,
+        helpful helpful,
+        like_number likeNumber,
+        floor_number    floorNumber,
+        publish_time    publishTime,
+        super_comment_id    upId
+        FROM comment
+        WHERE comment_id = #{commentId}
+    </select>
+
+    <update id="likeComment">
+        UPDATE comment
+        SET like_number = like_number + #{count}
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <insert id="addComment" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO comment
+        (author_id, best, content, helpful, like_number, post_id, super_comment_id, floor_number, publish_time, comment.read) VALUES
+        (#{userId}, #{best}, #{content}, #{helpful}, #{likeNumber}, #{postId}, #{upId}, #{floorNumber}, #{publishTime}, #{read})
+    </insert>
+
+    <update id="setHelpfulReply">
+        UPDATE comment
+        SET helpful = 1
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <update id="setBestReply">
+        UPDATE comment
+        SET best = 1
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <select id="countHelpComment" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM comment
+        WHERE post_id = #{postId} and helpful = 1
+    </select>
+
+    <select id="countCommentForUser" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM comment
+        WHERE author_id = #{userId}
+    </select>
+
+    <select id="countBestForUser" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM comment
+        WHERE author_id = #{userId} and best = 1
+    </select>
+
+    <select id="commentLikeNumberForUser" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(like_number),0)
+        FROM comment
+        WHERE author_id = #{userId}
+    </select>
+
+    <select id="userCommentList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            comment.comment_id  commentId,
+            comment.post_id  postId,
+            comment.content content,
+            comment.publish_time    publishTime,
+            post.title  title
+        FROM comment JOIN post ON comment.post_id = post.post_id
+        WHERE comment.author_id = #{userId} and comment.state = #{state} ORDER BY comment.publish_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="userMessageList" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            ac.comment_id commentId,
+            ac.content content,
+            ac.publish_time publishTime,
+            ac.author_id userId,
+            u.user_name userName,
+            u.user_image imgUrl,
+            ac.post_id postId,
+            p.title title,
+            pl.plate_name plateName,
+            ac.super_comment_id upId,
+            bc.floor_number floorNumber,
+            u2.user_name	upUserName
+        FROM
+            COMMENT AS ac
+            LEFT JOIN COMMENT AS bc ON ac.super_comment_id = bc.comment_id
+            INNER JOIN post AS p ON ac.post_id = p.post_id
+            INNER JOIN plate AS pl ON p.plate_id = pl.plate_id
+            INNER JOIN USER AS u ON ac.author_id = u.user_id
+            LEFT JOIN user AS u2 ON bc.author_id = u2.user_id
+        WHERE
+            (
+            p.author_id = #{userId} AND
+            ac.author_id != #{userId} AND ac.super_comment_id = 0) OR bc.author_id = #{userId}
+
+        ORDER BY
+            ac.publish_time DESC
+        limit #{currentIndex} , #{pageSize}
+    </select>
+
+    <select id="countMessageList" resultType="java.lang.Integer">
+        SELECT
+            COUNT( * )
+        FROM
+            COMMENT AS ac
+            LEFT JOIN COMMENT AS bc ON ac.super_comment_id = bc.comment_id
+            INNER JOIN post AS p ON ac.post_id = p.post_id
+        WHERE
+            ( p.author_id = #{userId} AND ac.author_id != #{userId} AND ac.READ = FALSE  AND ac.super_comment_id = 0)
+            OR ( bc.author_id = #{userId} AND ac.READ = FALSE )
+    </select>
+
+    <update id="updateCommentRead">
+        UPDATE COMMENT AS ac
+        LEFT JOIN COMMENT AS bc ON ac.super_comment_id = bc.comment_id
+        INNER JOIN post AS p ON ac.post_id = p.post_id
+        SET ac.READ = TRUE
+        WHERE
+            (
+            p.author_id = #{userId} AND
+            ac.author_id != #{userId} AND ac.super_comment_id = 0) OR bc.author_id = #{userId}
+    </update>
+
+    <update id="updateCommentState">
+        UPDATE comment
+        SET comment.state = #{state}
+        WHERE comment.comment_id = #{commentId}
+    </update>
+
+    <select id="commentContentById" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            comment.content content,
+            user.user_name  userName,
+            user.user_id    userId,
+            post.title  postTile,
+            user.status     userStatus
+        FROM comment LEFT JOIN  user ON comment.author_id = user.user_id LEFT JOIN post ON comment.post_id = post.post_id
+        WHERE comment.comment_id = #{commentId}
+    </select>
+</mapper>

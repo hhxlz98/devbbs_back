@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.CommentRelateDao">
+
+    <select id="existCommentRelate" parameterType="com.alibaba.fastjson.JSONObject" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT *
+        FROM comment_relate
+        WHERE user_id = #{userId} and comment_id = #{commentId} and type = #{type}
+    </select>
+
+    <insert id="addCommentRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO comment_relate
+        (comment_id, type, user_id) values (#{commentId}, #{type}, #{userId})
+    </insert>
+
+    <delete id="deleteCommentRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        DELETE FROM comment_relate
+        WHERE user_id = #{userId} and comment_id = #{commentId} and type = #{type}
+    </delete>
+
+</mapper>

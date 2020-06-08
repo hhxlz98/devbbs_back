@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.scut.devbbs.dao.UserRelateDao">
+
+    <insert id="addUserRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        INSERT INTO user_relate
+        (add_time, type, user1id, user2id) VALUES
+        (#{addTime}, #{type}, #{user1Id}, #{user2Id})
+    </insert>
+
+    <select id="existUserRelate" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            user_relate_id  userRelateId,
+            user1id user1Id,
+            user2id user2Id,
+            type    type,
+            add_time    addTime
+        FROM user_relate
+        WHERE type = #{type} and user1id = #{user1Id} and user2id = #{user2Id}
+    </select>
+
+    <delete id="deleteUserRelate" parameterType="com.alibaba.fastjson.JSONObject">
+        DELETE FROM user_relate
+        WHERE type = #{type} and user1id = #{user1Id} and user2id = #{user2Id}
+    </delete>
+
+    <select id="userListForType" parameterType="com.alibaba.fastjson.JSONObject" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            user_relate_id  userRelateId,
+            user2id userId,
+            user_name   userName,
+            user_show   userShow,
+            add_time    addTime,
+            user_image  imgUrl
+        FROM user_relate JOIN user ON user_relate.user2id = user.user_id
+        WHERE type = #{type} and user1id = #{userId}
+    </select>
+
+</mapper>
